@@ -86,10 +86,7 @@ export async function fetchCardData() {
 }
 
 const ITEMS_PER_PAGE = 6;
-export async function fetchFilteredInvoices(
-  query: string,
-  currentPage: number,
-) {
+export async function fetchFilteredInvoices(query: string, currentPage: number) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
@@ -159,9 +156,13 @@ export async function fetchInvoiceById(id: string) {
       // Convert amount from cents to dollars
       amount: invoice.amount / 100,
     }));
-
     return invoice[0];
   } catch (error) {
+    const postgresError = error as { code?: string };
+    if (postgresError.code === '22P02') {
+      return undefined;
+    }
+
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoice.');
   }
